@@ -23,6 +23,8 @@ Truy cập và tham gia cuộc thi trên hệ thống Kaggle tại đường lin
     - [2. Cấu trúc dữ liệu](#2-cấu-trúc-dữ-liệu)
     - [3. Kết quả dự đoán](#3-kết-quả-dự-đoán)
     - [4. Chỉ số đánh giá](#4-chỉ-số-đánh-giá)
+- [Subtask 1: Giải thích Mô hình](#subtask-1-giải-thích-mô-hình)
+- [Subtask 2: Ứng dụng Thực tiễn](#subtask-2-ứng-dụng-thực-tiễn)
 - [Starter Kit](#starter-kit)
 - [Các mốc thời gian quan trọng](#các-mốc-thời-gian-quan-trọng)
 - [Quy định cuộc thi](#quy-định-cuộc-thi)
@@ -38,7 +40,9 @@ Phân tích dữ liệu và xây dựng mô hình phân loại đa đầu ra (Mu
 ### 1. Đặc điểm bài toán
 
 - **Dữ liệu đầu vào (Input)** là một chuỗi các hành động liên tiếp của khách hàng theo thời gian. Trong vòng 4 tuần, khách hàng có thể cập nhật giao dịch và thay đổi nội dung đơn hàng. Toàn bộ các hành động này đã được mã hóa thành các con số định danh nhằm bảo mật thông tin.
-- **Dữ liệu đầu ra (Output)** gồm 6 biến mục tiêu độc lập nhằm hỗ trợ doanh nghiệp xác định xem mỗi ngày cần nhập và phân bổ những loại hàng hóa nào, từ đó tối ưu chi phí lưu kho và vận hành. Sáu biến này đại diện cho 6 khía cạnh hành vi khác nhau của người dùng và không có tính liên quan trực tiếp đến nhau. 
+- **Dữ liệu đầu ra (Output)** gồm 6 biến mục tiêu độc lập nhằm hỗ trợ doanh nghiệp xác định xem mỗi ngày cần nhập và phân bổ những loại hàng hóa nào, từ đó tối ưu chi phí lưu kho và vận hành. Trong đó: 
+  - `attr_1, attr_2, attr_4, attr_5`: là tháng, ngày bắt đầu và hoàn thành giao dịch.
+  - `attr_3, attr_6`: là chỉ số hoạt động (công suất) của nhà máy.
 
 ### 2. Cấu trúc dữ liệu
 
@@ -68,20 +72,39 @@ c6o2d,0,0,0,0,0,0
 
 ### 4. Chỉ số đánh giá
 
-Cuộc thi sử dụng chỉ số **Exact-Match Accuracy (Độ chính xác khớp tuyệt đối)** trên tập Test để đánh giá xếp hạng.
+Tại vòng Chung kết, bài toán được đánh giá dựa trên metric **Weighted L2 (MSE)** để phản ánh đúng mức độ nghiêm trọng của từng sai số đối với việc vận hành trong doanh nghiệp. Đối với hệ thống chấm vòng loại và bán kết, cuộc thi sử dụng chỉ số **Exact-Match Accuracy** (bạn vẫn có thể chọn metric này bằng lệnh tham số).
 
-**Quy tắc tính điểm:**
-Bài toán yêu cầu dự đoán một vector đầu ra gồm 6 chiều (tương ứng với 6 thuộc tính hành vi) cho mỗi người dùng.
+**Công thức chỉ số Weighted L2 (MSE) từ vòng Chung kết:**
 
-**Một dự đoán chỉ được tính là Chính xác khi và chỉ khi mô hình dự đoán đúng đồng thời cả 6 giá trị của vector đầu ra**. Nếu mô hình dự đoán sai dù chỉ một trong 6 chiều, toàn bộ kết quả dự đoán của dòng dữ liệu đó sẽ bị đánh giá là Không chính xác.
-
-**Công thức chỉ số Exact-Match Accuracy**
-
-$$\text{Accuracy} = \frac{N_{acc}}{N}$$
+$$\text{Score} = \frac{1}{6N} \sum_{i=1}^{N} \sum_{j=1}^{6} w_j \left(\frac{\hat{y}_{i,j}}{M_j} - \frac{y_{i,j}}{M_j}\right)^2$$
 
 **Trong đó:**
-- $N_{acc}$: Số lượng mẫu dự đoán đúng hoàn toàn (khớp đồng thời cả 6 thuộc tính).
-- $N$: Tổng số lượng mẫu trên tập Test.
+- $N$: Kích thước tập dữ liệu kiểm thử.
+- $y_{i,j}$ và $\hat{y}_{i,j}$: Giá trị thực tế và giá trị dự đoán của mẫu thứ $i$ tại thuộc tính thứ $j$.
+- $M_j$: Hằng số chuẩn hóa tương ứng của thuộc tính $j$, với $M = [12, 31, 99, 12, 31, 99]$ nhằm đưa các dải nhãn khác nhau về cùng thang đo.
+- $w_j$: Trọng số phạt của thuộc tính. Các thuộc tính 3 và 6 sẽ chịu hệ số phạt $w=100$. Các thuộc tính còn lại có $w=1$.
+
+*(Bonus: Ban tổ chức đặc biệt khuyến khích các đội thi sử dụng thêm các Auxiliary Metrics như Macro F1-Score, hoặc Custom Metrics để phân tích chi tiết kết quả thử nghiệm).*
+
+---
+
+# Subtask 1: Giải thích Mô hình
+
+Đây là trọng tâm chuyên môn của vòng Chung kết. Các đội thi cần phân tích sâu và chứng minh tính hiệu quả giải pháp:
+1. **Phân tích Attention Heatmap (Bắt buộc)**: Trực quan hóa Heatmap để tìm ra điểm khác biệt giữa dữ liệu cũ và mẫu dị biệt.
+2. **Feature Engineering**: Dựa vào insight từ Heatmap để tái thiết kế features đặc trưng.
+3. **Giải thích & Đối chứng**: Sử dụng features trên huấn luyện lại và đối sánh với mô hình "Base model" để chứng minh tính hiệu quả qua các chỉ số định lượng.
+
+> 🚫 **LƯU Ý:** Thí sinh không được phép sử dụng các Mô hình Ngôn ngữ Lớn (LLMs) có số lượng tham số vượt quá 0.5 Tỷ (0.5B parameters).
+
+---
+
+# Subtask 2: Ứng dụng Thực tiễn
+
+Các đội thi cần xây dựng hệ thống chuyển đổi 6 outputs của mô hình thành các khuyến nghị hành động cụ thể cho đội ngũ quản lý:
+- Đóng gói mô hình thành 1 **Web App** (Sử dụng Streamlit, Gradio...).
+- Minh họa rõ luồng tư duy: Hành vi 4 tuần của khách $\rightarrow$ 6 outputs dự đoán $\rightarrow$ Quyết định sản xuất ngày hôm nay.
+- Tự do sáng tạo nghiệp vụ (Như Bảng điều khiển lịch trình/Dynamic Scheduler, Trình giả lập kịch bản/What-If Simulator hoặc Cảnh báo rủi ro tồn kho ảo/Risk Detector).
 
 ---
 
@@ -104,8 +127,8 @@ Và các công cụ hỗ trợ:
 | ~~Mở đơn đăng ký tham gia~~    | ~~01/01/2026 - 15/01/2026~~   |
 | ~~Vòng loại~~    |  ~~21/01/2026 - 12/02/2026~~           |
 | ~~Báo cáo vòng loại~~    |  ~~13/02/2026~~      |
-| Vòng bán kết      | 23/02/2026 - 07/03/2026    |
-| Báo cáo vòng bán kết      | 09/03/2026    |
+| ~~Vòng bán kết~~      | ~~23/02/2026 - 07/03/2026~~    |
+| ~~Báo cáo vòng bán kết~~      | ~~09/03/2026~~    |
 | Vòng chung kết        | 12/03/2026 - 19/03/2026    |
 | Báo cáo vòng chung kết   | 21/03/2026       |
 
