@@ -13,7 +13,7 @@ Thí sinh, với vai trò một Data Scientist, cần giải quyết bài toán 
 # Quick Start
 
 Truy cập và tham gia cuộc thi trên hệ thống Kaggle tại đường link sau: 
-[DỰ ĐOÁN HÀNH VI NGƯỜI DÙNG (USER BEHAVIOR PREDICTION) trên Kaggle](https://www.kaggle.com/t/bb073834e2f240be99c0b7e4672d96da)
+[DỰ ĐOÁN HÀNH VI NGƯỜI DÙNG (USER BEHAVIOR PREDICTION) trên Kaggle](https://www.kaggle.com/t/13f42d64fd9f42979cc8c59cdc136250)
 
 ---
 
